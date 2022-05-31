@@ -6,9 +6,6 @@ on:
 
 env:
   PROJECT_NAME: solda-aliens4friends-api
-  DOCKER_IMAGE: ghcr.io/${{ github.repository }}/${{ github.event.repository.name }}-app
-  DOCKER_TAG: ${{ github.sha }}
-  JAVA_VERSION: '8'
 
 jobs:
   # Deploy Test
