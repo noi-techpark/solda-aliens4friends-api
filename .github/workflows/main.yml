@@ -1,0 +1,41 @@
+name: CI/CD
+
+on:
+  push:
+  pull_request:
+
+env:
+  PROJECT_NAME: solda-aliens4friends-api
+  DOCKER_IMAGE: ghcr.io/${{ github.repository }}/${{ github.event.repository.name }}-app
+  DOCKER_TAG: ${{ github.sha }}
+  JAVA_VERSION: '8'
+
+jobs:
+  # Deploy Test
+  deploy-test:
+    runs-on: ubuntu-20.04
+    if: github.ref == 'refs/heads/main'
+    needs: test
+    concurrency: deploy-test
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v2
+      - name: Create .env file
+        uses: noi-techpark/github-actions/env-file@v2
+        env:
+          # Postgrest Configuration
+          X_SERVER_PORT: 1010
+          X_USERNAME: solda_api_admin
+          X_PASSWORD: ${{ secrets.SOLDA_API_ADMIN_PASSWORD }}
+          X_DB_URI: test-pg-bdp.co90ybcr8iim.eu-west-1.rds.amazonaws.com:5432/solda
+          X_DB_SCHEMA: public
+          X_OPENAPI_URI: https://api.solda.testingmachine.eu
+
+      - name: Deploy application
+        uses: noi-techpark/github-actions/docker-deploy@v2
+        with:
+          hosts: 'test'
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          docker-username: 'noi-techpark-bot'
+          docker-password: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          project-name: ${{ env.PROJECT_NAME }}

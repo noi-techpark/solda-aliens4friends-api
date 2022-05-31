@@ -1,0 +1,21 @@
+version: "3.4"
+
+services:
+  app:
+    image: postgrest/postgrest
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      PGRST_DB_URI: postgres://${USERNAME}:${PASSWORD}@${DB_URI}
+      PGRST_DB_SCHEMA: ${DB_SCHEMA}
+      PGRST_DB_ANON_ROLE: ${USERNAME} #In production this role should not be the same as the one used for the connection
+      PGRST_OPENAPI_SERVER_PROXY_URI: ${OPENAPI_URI}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:${SERVER_PORT}/actuator/health"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    ports:
+      - "3000:${SERVER_PORT}"
